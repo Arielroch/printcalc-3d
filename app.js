@@ -10,6 +10,16 @@ const APP_KEY   = 'printcalc3d_v1';
 const SYNC_KEY  = 'printcalc_syncCode';
 const FB_KEY    = 'printcalc_firebase';
 
+// Configuração padrão do Firebase do Ariel (conecta automaticamente em todos os aparelhos)
+const DEFAULT_FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDRCKSJ-Z81-TzMUbrY9cw4haiV4h72zb8",
+  authDomain: "printcalc-3d-218c2.firebaseapp.com",
+  projectId: "printcalc-3d-218c2",
+  storageBucket: "printcalc-3d-218c2.firebasestorage.app",
+  messagingSenderId: "227036033568",
+  appId: "1:227036033568:web:2f4920490b48e3aef1c245"
+};
+
 let state = {
   quotes: [],
   settings: {
@@ -93,10 +103,16 @@ function generateSyncCode() {
 // ─── Firebase ─────────────────────────────────────────────
 async function restoreFirebase() {
   try {
+    let cfg = null;
     const raw = localStorage.getItem(FB_KEY);
-    if (!raw) return;
-    const cfg = JSON.parse(raw);
-    await initFirebase(cfg, false);
+    if (raw) {
+      cfg = JSON.parse(raw);
+    } else if (DEFAULT_FIREBASE_CONFIG) {
+      cfg = DEFAULT_FIREBASE_CONFIG;
+    }
+    if (cfg) {
+      await initFirebase(cfg, false);
+    }
   } catch(e) { /* silent */ }
 }
 
