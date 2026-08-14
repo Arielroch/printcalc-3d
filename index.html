@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PrintCalc 3D — Calculadora de Impressão 3D</title>
+  <meta name="description" content="Calculadora profissional de custos para impressão 3D com Bambu Lab A1 Combo. Calcule energia CEMIG, filamento, depreciação e defina o preço de venda.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- Animated background -->
+<div class="bg-grid"></div>
+<div class="bg-glow bg-glow-1"></div>
+<div class="bg-glow bg-glow-2"></div>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 32 32" fill="none"><path d="M16 4L4 10V22L16 28L28 22V10L16 4Z" stroke="url(#lg1)" stroke-width="2"/><path d="M16 4V28M4 10L16 16L28 10M4 22L16 16M28 22L16 16" stroke="url(#lg2)" stroke-width="1.5" opacity="0.6"/><defs><linearGradient id="lg1" x1="4" y1="4" x2="28" y2="28"><stop stop-color="#8b5cf6"/><stop offset="1" stop-color="#22d3ee"/></linearGradient><linearGradient id="lg2" x1="4" y1="4" x2="28" y2="28"><stop stop-color="#8b5cf6"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs></svg>
+      </div>
+      <div class="logo-text">
+        <span class="logo-name">PrintCalc</span>
+        <span class="logo-sub">3D Studio</span>
+      </div>
+    </div>
+    <button class="collapse-btn" id="collapseBtn" title="Recolher menu" aria-label="Recolher menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 17l-5-5 5-5M19 17l-5-5 5-5"/></svg>
+    </button>
+  </div>
+
+  <nav class="nav-menu" role="navigation" aria-label="Menu principal">
+    <a href="#" class="nav-item active" data-section="dashboard" id="nav-dashboard" aria-current="page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+      <span>Dashboard</span>
+      <div class="nav-indicator"></div>
+    </a>
+    <a href="#" class="nav-item" data-section="calculator" id="nav-calculator">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h8M8 14h5"/><circle cx="17" cy="17" r="3"/><path d="M17 16v1.5M17 19.5V21M15.5 17.5l1 1M18.5 17.5l-1 1"/></svg>
+      <span>Calcular</span>
+      <div class="nav-indicator"></div>
+    </a>
+    <a href="#" class="nav-item" data-section="history" id="nav-history">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      <span>Histórico</span>
+      <span class="nav-badge" id="navBadge">0</span>
+      <div class="nav-indicator"></div>
+    </a>
+    <a href="#" class="nav-item" data-section="settings" id="nav-settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+      <span>Configurações</span>
+      <div class="nav-indicator"></div>
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="printer-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      <div class="printer-info">
+        <span class="printer-name">Bambu Lab A1 Combo</span>
+        <span class="printer-status" id="syncStatus">● Local</span>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- Main content -->
+<main class="main-content" id="mainContent">
+
+  <!-- Top bar -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="menu-btn" id="menuBtn" aria-label="Abrir menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="page-title-group">
+        <h1 class="page-title" id="pageTitle">Dashboard</h1>
+        <span class="page-subtitle" id="pageSubtitle">Visão geral do seu negócio</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="tariff-badge" id="tariffBadge" title="Tarifa CEMIG atual">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        <span id="tariffBadgeText">Verde · R$ 0,956/kWh</span>
+      </div>
+      <button class="btn-primary" id="newQuoteTopBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Novo Cálculo
+      </button>
+    </div>
+  </header>
+
+  <!-- ============================================================ -->
+  <!-- DASHBOARD SECTION -->
+  <!-- ============================================================ -->
+  <section class="section active" id="dashboardSection" aria-label="Dashboard">
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+      <div class="stat-card" id="statPedidos">
+        <div class="stat-bg-icon">📦</div>
+        <div class="stat-icon-wrap" style="--c:#8b5cf6">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+        </div>
+        <div class="stat-body">
+          <span class="stat-label">Total de Pedidos</span>
+          <span class="stat-value" id="totalOrders">0</span>
+          <span class="stat-change neutral" id="ordersChange">Nenhum ainda</span>
+        </div>
+      </div>
+
+      <div class="stat-card" id="statFaturamento">
+        <div class="stat-bg-icon">💰</div>
+        <div class="stat-icon-wrap" style="--c:#22d3ee">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <div class="stat-body">
+          <span class="stat-label">Faturamento Total</span>
+          <span class="stat-value" id="totalRevenue">R$ 0,00</span>
+          <span class="stat-change neutral" id="revenueChange">Aguardando pedidos</span>
+        </div>
+      </div>
+
+      <div class="stat-card" id="statLucro">
+        <div class="stat-bg-icon">📈</div>
+        <div class="stat-icon-wrap" style="--c:#34d399">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+        </div>
+        <div class="stat-body">
+          <span class="stat-label">Lucro Total</span>
+          <span class="stat-value" id="totalProfit">R$ 0,00</span>
+          <span class="stat-change neutral" id="profitChange">— margem média</span>
+        </div>
+      </div>
+
+      <div class="stat-card" id="statTicket">
+        <div class="stat-bg-icon">🎯</div>
+        <div class="stat-icon-wrap" style="--c:#fbbf24">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+        </div>
+        <div class="stat-body">
+          <span class="stat-label">Ticket Médio</span>
+          <span class="stat-value" id="avgTicket">R$ 0,00</span>
+          <span class="stat-change neutral" id="ticketChange">por peça</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Row 1 -->
+    <div class="charts-row">
+      <div class="chart-card span-2">
+        <div class="chart-header">
+          <div>
+            <h3>Faturamento &amp; Lucro Mensal</h3>
+            <p class="chart-subtitle">Últimos 6 meses</p>
+          </div>
+          <div class="chart-legend">
+            <span class="legend-dot" style="background:#8b5cf6"></span><span>Faturamento</span>
+            <span class="legend-dot" style="background:#34d399"></span><span>Lucro</span>
+          </div>
+        </div>
+        <div class="chart-body">
+          <canvas id="revenueChart"></canvas>
+          <div class="chart-empty" id="revenueEmpty">
+            <div class="empty-icon-big">📊</div>
+            <p>Faça os primeiros cálculos para ver o gráfico de faturamento</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <h3>Custos</h3>
+            <p class="chart-subtitle">Distribuição média</p>
+          </div>
+        </div>
+        <div class="chart-body">
+          <canvas id="costsChart"></canvas>
+          <div class="chart-empty" id="costsEmpty">
+            <div class="empty-icon-big">🥧</div>
+            <p>Sem dados ainda</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Row 2 -->
+    <div class="charts-row three-col">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <h3>Top Clientes</h3>
+            <p class="chart-subtitle">Por faturamento</p>
+          </div>
+        </div>
+        <div class="top-clients-list" id="topClients">
+          <div class="empty-state-small">
+            <span>👥</span>
+            <p>Nenhum cliente cadastrado</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <h3>Filamentos</h3>
+            <p class="chart-subtitle">Gramas por tipo</p>
+          </div>
+        </div>
+        <div class="chart-body">
+          <canvas id="filamentChart"></canvas>
+          <div class="chart-empty" id="filamentEmpty">
+            <div class="empty-icon-big">🧵</div>
+            <p>Sem dados ainda</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card recent-card">
+        <div class="chart-header">
+          <div>
+            <h3>Pedidos Recentes</h3>
+            <p class="chart-subtitle">Últimas 5 ordens</p>
+          </div>
+          <button class="link-btn" data-section="history">Ver todos →</button>
+        </div>
+        <div class="recent-list" id="recentList">
+          <div class="empty-state-small">
+            <span>📋</span>
+            <p>Nenhum pedido ainda</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- CALCULATOR SECTION -->
+  <!-- ============================================================ -->
+  <section class="section" id="calculatorSection" aria-label="Calculadora">
+    <div class="calculator-layout">
+
+      <!-- Left Column: Form -->
+      <div class="calc-form-col">
+
+        <!-- Job Info -->
+        <div class="form-card">
+          <div class="form-card-header">
+            <div class="fch-icon" style="--c:#8b5cf6">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <h3>Informações do Pedido</h3>
+          </div>
+          <div class="form-grid g2">
+            <div class="form-group">
+              <label for="clientName">👤 Nome do Cliente</label>
+              <input type="text" id="clientName" placeholder="Ex: João Silva" autocomplete="off" list="clientSuggestions">
+              <datalist id="clientSuggestions"></datalist>
+            </div>
+            <div class="form-group">
+              <label for="pieceName">🏷️ Nome da Peça</label>
+              <input type="text" id="pieceName" placeholder="Ex: Suporte para celular">
+            </div>
+          </div>
+        </div>
+
+        <!-- Print Time -->
+        <div class="form-card">
+          <div class="form-card-header">
+            <div class="fch-icon" style="--c:#22d3ee">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <h3>Tempo de Impressão</h3>
+          </div>
+          <div class="form-grid g3">
+            <div class="form-group">
+              <label for="printHours">⏱️ Horas</label>
+              <input type="number" id="printHours" min="0" max="999" value="0" placeholder="0">
+            </div>
+            <div class="form-group">
+              <label for="printMinutes">⏱️ Minutos</label>
+              <input type="number" id="printMinutes" min="0" max="59" value="0" placeholder="0">
+            </div>
+            <div class="form-group">
+              <label for="printerPower">⚡ Potência (W)</label>
+              <input type="number" id="printerPower" min="1" max="500" value="89" placeholder="89">
+            </div>
+          </div>
+          <div class="energy-mini-display">
+            <div class="emd-item">
+              <span>Consumo</span>
+              <strong id="energyKwhDisplay">0,000 kWh</strong>
+            </div>
+            <div class="emd-sep"></div>
+            <div class="emd-item">
+              <span>Custo energia</span>
+              <strong class="color-cyan" id="energyCostMini">R$ 0,00</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filament -->
+        <div class="form-card">
+          <div class="form-card-header">
+            <div class="fch-icon" style="--c:#fbbf24">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+            </div>
+            <h3>Filamento</h3>
+          </div>
+          <div class="form-grid g3">
+            <div class="form-group">
+              <label for="filamentType">🎨 Tipo</label>
+              <select id="filamentType">
+                <option value="PLA">PLA</option>
+                <option value="PLA+">PLA+</option>
+                <option value="PETG">PETG</option>
+                <option value="ABS">ABS</option>
+                <option value="ASA">ASA</option>
+                <option value="TPU">TPU</option>
+                <option value="PA">Nylon (PA)</option>
+                <option value="PC">Policarbonato</option>
+                <option value="SILK">PLA Silk</option>
+                <option value="Wood">PLA Madeira</option>
+                <option value="Outro">Outro</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="filamentWeight">⚖️ Peso usado (g)</label>
+              <input type="number" id="filamentWeight" min="0" step="0.1" value="0" placeholder="0">
+            </div>
+            <div class="form-group">
+              <label for="filamentPriceKg">💲 Preço/kg (R$)</label>
+              <input type="number" id="filamentPriceKg" min="0" step="0.01" value="80" placeholder="80,00">
+            </div>
+          </div>
+        </div>
+
+        <!-- Machine & Maintenance -->
+        <div class="form-card">
+          <div class="form-card-header">
+            <div class="fch-icon" style="--c:#f472b6">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            </div>
+            <h3>Máquina &amp; Manutenção</h3>
+          </div>
+          <div class="form-grid g2">
+            <div class="form-group">
+              <label for="machineCost">💻 Custo da impressora (R$)</label>
+              <input type="number" id="machineCost" min="0" step="0.01" value="4500">
+            </div>
+            <div class="form-group">
+              <label for="machineLife">🔁 Vida útil (horas)</label>
+              <input type="number" id="machineLife" min="1" value="5000">
+            </div>
+            <div class="form-group">
+              <label for="maintenanceRate">🔧 Manutenção (R$/hora)</label>
+              <input type="number" id="maintenanceRate" min="0" step="0.01" value="0.50" placeholder="0,50">
+            </div>
+            <div class="calc-info-box">
+              <span>Depreciação + manutenção</span>
+              <strong id="machineDisplay">R$ 0,00</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Labor -->
+        <div class="form-card">
+          <div class="form-card-header">
+            <div class="fch-icon" style="--c:#34d399">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <h3>Mão de Obra</h3>
+          </div>
+          <div class="form-grid g3">
+            <div class="form-group">
+              <label for="laborRate">💵 Valor/hora (R$)</label>
+              <input type="number" id="laborRate" min="0" step="0.01" value="20">
+            </div>
+            <div class="form-group">
+              <label for="laborSetup">⚙️ Preparo (min)</label>
+              <input type="number" id="laborSetup" min="0" value="15">
+            </div>
+            <div class="form-group">
+              <label for="laborFinish">✂️ Pós-proc. (min)</label>
+              <input type="number" id="laborFinish" min="0" value="10">
+            </div>
+          </div>
+        </div>
+
+        <!-- Packaging -->
+        <div class="form-card">
+          <div class="form-card-header">
+            <div class="fch-icon" style="--c:#a78bfa">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><line x1="3.27" y1="6.96" x2="12" y2="12.01"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+            </div>
+            <h3>Embalagem &amp; Envio</h3>
+          </div>
+          <div class="form-grid g2">
+            <div class="form-group">
+              <label for="packagingCost">📦 Embalagem (R$)</label>
+              <input type="number" id="packagingCost" min="0" step="0.01" value="0">
+            </div>
+            <div class="form-group">
+              <label for="shippingCost">🚚 Frete (R$)</label>
+              <input type="number" id="shippingCost" min="0" step="0.01" value="0">
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="form-card">
+          <div class="form-card-header">
+            <div class="fch-icon" style="--c:#64748b">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            </div>
+            <h3>Observações</h3>
+          </div>
+          <div class="form-group">
+            <textarea id="notes" rows="3" placeholder="Detalhes do pedido, acordos com cliente, materiais especiais..."></textarea>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Result Panel -->
+      <div class="result-col">
+        <div class="result-card" id="resultCard">
+          <div class="result-header">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            <h3>Resultado do Cálculo</h3>
+          </div>
+
+          <!-- Margin Slider -->
+          <div class="margin-section">
+            <div class="margin-header">
+              <span>Margem de Lucro</span>
+              <span class="margin-value" id="marginDisplay">40%</span>
+            </div>
+            <input type="range" class="margin-slider" id="profitMargin" min="0" max="300" value="40" aria-label="Margem de lucro">
+            <div class="margin-presets">
+              <button class="preset-btn" data-margin="20">20%</button>
+              <button class="preset-btn" data-margin="40">40%</button>
+              <button class="preset-btn" data-margin="60">60%</button>
+              <button class="preset-btn" data-margin="100">100%</button>
+            </div>
+          </div>
+
+          <!-- Cost Breakdown -->
+          <div class="breakdown-section">
+            <h4>Composição do Custo</h4>
+            <div class="breakdown-list">
+              <div class="breakdown-item">
+                <div class="bi-label">
+                  <span class="bi-dot" style="background:#fbbf24"></span>
+                  <span>⚡ Energia</span>
+                </div>
+                <div class="bi-bar-wrap">
+                  <div class="bi-bar"><div class="bi-fill" id="barEnergy" style="background:linear-gradient(90deg,#f59e0b,#fbbf24)"></div></div>
+                </div>
+                <span class="bi-value" id="resultEnergy">R$ 0,00</span>
+              </div>
+              <div class="breakdown-item">
+                <div class="bi-label">
+                  <span class="bi-dot" style="background:#8b5cf6"></span>
+                  <span>🧵 Filamento</span>
+                </div>
+                <div class="bi-bar-wrap">
+                  <div class="bi-bar"><div class="bi-fill" id="barFilament" style="background:linear-gradient(90deg,#8b5cf6,#a78bfa)"></div></div>
+                </div>
+                <span class="bi-value" id="resultFilament">R$ 0,00</span>
+              </div>
+              <div class="breakdown-item">
+                <div class="bi-label">
+                  <span class="bi-dot" style="background:#f472b6"></span>
+                  <span>🖨️ Máquina</span>
+                </div>
+                <div class="bi-bar-wrap">
+                  <div class="bi-bar"><div class="bi-fill" id="barMachine" style="background:linear-gradient(90deg,#ec4899,#f472b6)"></div></div>
+                </div>
+                <span class="bi-value" id="resultMachine">R$ 0,00</span>
+              </div>
+              <div class="breakdown-item">
+                <div class="bi-label">
+                  <span class="bi-dot" style="background:#34d399"></span>
+                  <span>👷 Mão de obra</span>
+                </div>
+                <div class="bi-bar-wrap">
+                  <div class="bi-bar"><div class="bi-fill" id="barLabor" style="background:linear-gradient(90deg,#10b981,#34d399)"></div></div>
+                </div>
+                <span class="bi-value" id="resultLabor">R$ 0,00</span>
+              </div>
+              <div class="breakdown-item">
+                <div class="bi-label">
+                  <span class="bi-dot" style="background:#818cf8"></span>
+                  <span>📦 Embalagem</span>
+                </div>
+                <div class="bi-bar-wrap">
+                  <div class="bi-bar"><div class="bi-fill" id="barPackaging" style="background:linear-gradient(90deg,#6366f1,#818cf8)"></div></div>
+                </div>
+                <span class="bi-value" id="resultPackaging">R$ 0,00</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Totals -->
+          <div class="totals-section">
+            <div class="total-row">
+              <span>Custo Total</span>
+              <span class="total-cost-val" id="resultTotalCost">R$ 0,00</span>
+            </div>
+            <div class="total-row selling">
+              <span>💰 Preço de Venda</span>
+              <span class="total-price-val" id="resultSellingPrice">R$ 0,00</span>
+            </div>
+            <div class="total-row profit-row">
+              <span>📈 Lucro Estimado</span>
+              <span class="total-profit-val" id="resultProfit">R$ 0,00</span>
+            </div>
+          </div>
+
+          <button class="save-btn" id="saveBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Salvar Pedido
+          </button>
+          <p class="save-hint">Preencha cliente e peça antes de salvar</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- HISTORY SECTION -->
+  <!-- ============================================================ -->
+  <section class="section" id="historySection" aria-label="Histórico">
+
+    <div class="history-toolbar">
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="searchInput" placeholder="Buscar por cliente, peça..." aria-label="Buscar histórico">
+      </div>
+      <div class="history-filters">
+        <select id="filterFilament" aria-label="Filtrar por filamento">
+          <option value="">🧵 Todos</option>
+          <option value="PLA">PLA</option>
+          <option value="PLA+">PLA+</option>
+          <option value="PETG">PETG</option>
+          <option value="ABS">ABS</option>
+          <option value="ASA">ASA</option>
+          <option value="TPU">TPU</option>
+        </select>
+        <select id="filterStatus" aria-label="Filtrar por status">
+          <option value="">📋 Todos</option>
+          <option value="pending">⏳ Pendente</option>
+          <option value="paid">✅ Pago</option>
+        </select>
+        <button class="btn-export" id="exportCsvBtn" title="Exportar CSV">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          CSV
+        </button>
+      </div>
+    </div>
+
+    <div class="history-table-wrap">
+      <table class="history-table" id="historyTable" role="table">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Cliente</th>
+            <th>Peça</th>
+            <th>Filamento</th>
+            <th>Tempo</th>
+            <th>Custo</th>
+            <th>Venda</th>
+            <th>Lucro</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+      <div class="history-empty" id="historyEmpty">
+        <div class="empty-icon-big">📋</div>
+        <h3>Nenhum pedido ainda</h3>
+        <p>Faça seu primeiro cálculo para começar o histórico de pedidos</p>
+        <button class="btn-primary" id="firstCalcBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Primeiro Cálculo
+        </button>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SETTINGS SECTION -->
+  <!-- ============================================================ -->
+  <section class="section" id="settingsSection" aria-label="Configurações">
+    <div class="settings-grid">
+
+      <!-- CEMIG -->
+      <div class="settings-card">
+        <div class="scard-header">
+          <div class="scard-icon" style="--c:#fbbf24">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          </div>
+          <div>
+            <h3>Energia Elétrica — CEMIG</h3>
+            <p>Montes Claros, MG — Tarifa B1 Residencial</p>
+          </div>
+        </div>
+        <div class="scard-fields">
+          <div class="form-group">
+            <label for="settingsTariff">Tarifa base CEMIG B1 (R$/kWh)</label>
+            <input type="number" id="settingsTariff" min="0" step="0.001" value="0.956">
+            <small>Tarifa residencial CEMIG 2025/2026 (já inclui ICMS 18%)</small>
+          </div>
+          <div class="form-group">
+            <label for="settingsBandeira">Bandeira Tarifária</label>
+            <select id="settingsBandeira">
+              <option value="0">🟢 Verde — R$ 0,00/kWh adicional</option>
+              <option value="0.01874">🟡 Amarela — R$ 0,01874/kWh adicional</option>
+              <option value="0.04169">🔴 Vermelha 1 — R$ 0,04169/kWh adicional</option>
+              <option value="0.09492">🔴 Vermelha 2 — R$ 0,09492/kWh adicional</option>
+              <option value="0.14200">⚫ Escassez Hídrica — R$ 0,14200/kWh adicional</option>
+            </select>
+          </div>
+          <div class="tariff-total-display">
+            <span>Tarifa total atual:</span>
+            <strong id="totalTariffDisplay">R$ 0,956/kWh</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Printer -->
+      <div class="settings-card">
+        <div class="scard-header">
+          <div class="scard-icon" style="--c:#8b5cf6">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          </div>
+          <div>
+            <h3>Impressora — Bambu Lab A1 Combo</h3>
+            <p>Depreciação e consumo de energia</p>
+          </div>
+        </div>
+        <div class="scard-fields">
+          <div class="form-grid g2">
+            <div class="form-group">
+              <label for="settingsMachineCost">Valor da impressora (R$)</label>
+              <input type="number" id="settingsMachineCost" value="4500" step="0.01">
+            </div>
+            <div class="form-group">
+              <label for="settingsMachineLife">Vida útil estimada (h)</label>
+              <input type="number" id="settingsMachineLife" value="5000">
+            </div>
+            <div class="form-group">
+              <label for="settingsPower">Potência média (W)</label>
+              <input type="number" id="settingsPower" value="89">
+              <small>A1: ~85W + AMS Lite: ~4W ≈ 89W</small>
+            </div>
+            <div class="form-group">
+              <label for="settingsMaintenanceRate">Manutenção (R$/hora)</label>
+              <input type="number" id="settingsMaintenanceRate" value="0.50" step="0.01">
+              <small>Bicos, correias, lubrificação — padrão: R$ 0,50/h</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Labor defaults -->
+      <div class="settings-card">
+        <div class="scard-header">
+          <div class="scard-icon" style="--c:#34d399">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <div>
+            <h3>Mão de Obra Padrão</h3>
+            <p>Valores usados como padrão em novos cálculos</p>
+          </div>
+        </div>
+        <div class="scard-fields">
+          <div class="form-grid g2">
+            <div class="form-group">
+              <label for="settingsLaborRate">Valor hora (R$/h)</label>
+              <input type="number" id="settingsLaborRate" value="20" step="0.01">
+            </div>
+            <div class="form-group">
+              <label for="settingsDefaultMargin">Margem padrão (%)</label>
+              <input type="number" id="settingsDefaultMargin" value="40" min="0" max="1000">
+            </div>
+            <div class="form-group">
+              <label for="settingsSetupTime">Tempo preparo (min)</label>
+              <input type="number" id="settingsSetupTime" value="15">
+            </div>
+            <div class="form-group">
+              <label for="settingsFinishTime">Pós-processamento (min)</label>
+              <input type="number" id="settingsFinishTime" value="10">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cloud Sync -->
+      <div class="settings-card cloud-card">
+        <div class="scard-header">
+          <div class="scard-icon" style="--c:#22d3ee">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+          </div>
+          <div>
+            <h3>Sincronização em Nuvem</h3>
+            <p>Acesse seu histórico em qualquer dispositivo</p>
+          </div>
+        </div>
+        <div class="scard-fields">
+          <div class="sync-banner">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <p>Use o mesmo <strong>Código de Sincronização</strong> em todos os dispositivos para compartilhar os dados automaticamente via Firebase.</p>
+          </div>
+
+          <div class="form-group">
+            <label>Seu Código de Sincronização</label>
+            <div class="sync-code-display">
+              <span class="sync-code-value" id="syncCodeDisplay">—</span>
+              <button class="icon-btn" id="copySyncBtn" title="Copiar código">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Conectar com outro código</label>
+            <div class="sync-input-row">
+              <input type="text" id="syncCodeInput" placeholder="Ex: ABC-1234" maxlength="12">
+              <button class="btn-sync" id="applySyncBtn">Conectar</button>
+            </div>
+          </div>
+
+          <details class="firebase-details">
+            <summary>🔥 Configurar Firebase (sincronização automática)</summary>
+            <div class="firebase-setup-inner">
+              <ol class="setup-steps">
+                <li>Acesse <a href="https://console.firebase.google.com" target="_blank" rel="noopener">console.firebase.google.com</a></li>
+                <li>Crie um projeto → Adicionar App Web → Copie o <code>firebaseConfig</code></li>
+                <li>Em "Build" → "Firestore Database" → Criar (modo teste)</li>
+                <li>Cole a configuração abaixo e clique em Conectar</li>
+              </ol>
+              <div class="form-group">
+                <label for="firebaseConfigInput">Cole seu firebaseConfig aqui (JSON)</label>
+                <textarea id="firebaseConfigInput" rows="7" placeholder='{
+  "apiKey": "AIza...",
+  "authDomain": "seu-projeto.firebaseapp.com",
+  "projectId": "seu-projeto",
+  "storageBucket": "seu-projeto.appspot.com",
+  "messagingSenderId": "123456789",
+  "appId": "1:123456789:web:abc..."
+}'></textarea>
+              </div>
+              <button class="btn-firebase" id="saveFirebaseBtn">
+                🔥 Conectar ao Firebase
+              </button>
+              <div class="firebase-status-msg" id="firebaseStatusMsg"></div>
+            </div>
+          </details>
+        </div>
+      </div>
+
+      <!-- Data Management -->
+      <div class="settings-card">
+        <div class="scard-header">
+          <div class="scard-icon" style="--c:#f87171">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          </div>
+          <div>
+            <h3>Gerenciar Dados</h3>
+            <p>Backup, restauração e limpeza</p>
+          </div>
+        </div>
+        <div class="scard-fields">
+          <div class="data-actions">
+            <button class="btn-outline-action" id="exportJsonBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Exportar Backup (JSON)
+            </button>
+            <label class="btn-outline-action file-label">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Importar Backup
+              <input type="file" id="importFile" accept=".json" hidden>
+            </label>
+            <button class="btn-danger-action" id="clearDataBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+              Limpar Todos os Dados
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-save-bar">
+        <button class="save-settings-btn" id="saveSettingsBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Salvar Configurações
+        </button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Quote Detail Modal -->
+<div class="modal-overlay" id="detailModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">Detalhes do Pedido</h3>
+      <button class="modal-close" id="closeModalBtn" aria-label="Fechar">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer">
+      <button class="btn-outline-modal" id="togglePayBtn">Marcar como Pago</button>
+      <button class="btn-danger-modal" id="deleteQuoteBtn">Excluir</button>
+      <button class="btn-primary" id="closeModalBtn2">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
