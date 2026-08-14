@@ -87,7 +87,7 @@ function initSyncCode() {
   }
   state.syncCode = code;
   el('syncCodeDisplay').textContent = code;
-  el('syncCodeInput').placeholder   = `Ex: ${code}`;
+  el('syncCodeInput').placeholder   = `Ex: ARIEL3D`;
 }
 
 function generateSyncCode() {
@@ -862,24 +862,24 @@ function clearAllData() {
 function applySyncCode() {
   const input = el('syncCodeInput').value.trim().toUpperCase();
   if (!input || input.length < 6) {
-    showToast('⚠️ Código inválido', 'error'); return;
+    showToast('⚠️ Chave muito curta (mínimo 6 caracteres)', 'error'); return;
   }
-  if (!confirm(`Conectar com código "${input}"? Seus dados serão substituídos pelos dados deste código.`)) return;
+  if (!confirm(`Conectar com a chave "${input}"? Seus dados locais serão substituídos pelos dados desta chave.`)) return;
   state.syncCode = input;
   localStorage.setItem(SYNC_KEY, input);
   el('syncCodeDisplay').textContent = input;
   el('syncCodeInput').value = '';
   // Re-sync from Firebase with new code
   if (state.db) {
-    syncFromFirebase().then(() => showToast(`☁️ Conectado ao código ${input}!`, 'success'));
+    syncFromFirebase().then(() => showToast(`☁️ Conectado com a chave ${input}!`, 'success'));
   } else {
-    showToast(`✅ Código alterado para ${input}. Configure o Firebase para sincronizar.`, 'info');
+    showToast(`✅ Chave alterada para ${input}.`, 'info');
   }
 }
 
 function copySyncCode() {
   navigator.clipboard.writeText(state.syncCode)
-    .then(() => showToast('📋 Código copiado!', 'success'))
+    .then(() => showToast('📋 Chave copiada!', 'success'))
     .catch(() => showToast('❌ Não foi possível copiar', 'error'));
 }
 

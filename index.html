@@ -723,25 +723,26 @@
         <div class="scard-fields">
           <div class="sync-banner">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            <p>Use o mesmo <strong>Código de Sincronização</strong> em todos os dispositivos para compartilhar os dados automaticamente via Firebase.</p>
+            <p>Use a mesma <strong>Chave de Acesso</strong> em todos os seus aparelhos para compartilhar os dados automaticamente.</p>
           </div>
 
           <div class="form-group">
-            <label>Seu Código de Sincronização</label>
+            <label>Sua Chave Atual (Identificador na Nuvem)</label>
             <div class="sync-code-display">
               <span class="sync-code-value" id="syncCodeDisplay">—</span>
-              <button class="icon-btn" id="copySyncBtn" title="Copiar código">
+              <button class="icon-btn" id="copySyncBtn" title="Copiar chave">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
               </button>
             </div>
           </div>
 
           <div class="form-group">
-            <label>Conectar com outro código</label>
+            <label>Criar ou Conectar com Chave Personalizada</label>
             <div class="sync-input-row">
-              <input type="text" id="syncCodeInput" placeholder="Ex: ABC-1234" maxlength="12">
+              <input type="text" id="syncCodeInput" placeholder="Ex: ARIEL3D (Mínimo 6 dígitos)" maxlength="16">
               <button class="btn-sync" id="applySyncBtn">Conectar</button>
             </div>
+            <small>Crie uma chave fácil de lembrar para acessar de onde estiver.</small>
           </div>
 
           <details class="firebase-details">
